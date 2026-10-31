@@ -1,0 +1,34 @@
+[project]
+name = "motogp-analytics"
+version = "0.1.0"
+description = "Pipeline de dados do Mundial de MotoGP (1949-2022) em três camadas com SQL e Python"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "kagglehub>=0.3",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/motogp"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

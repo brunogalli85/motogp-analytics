@@ -1,0 +1,15 @@
+# Credenciais
+.env
+kaggle.json
+
+# Dados (baixados pelo pipeline, não versionados)
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
