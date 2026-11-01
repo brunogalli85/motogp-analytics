@@ -59,6 +59,18 @@ Rodam automaticamente depois da refined:
 | Vitórias atribuídas a `Desconhecido` | Aviso no log, com a quantidade |
 | Nomes repetidos em `riders_finishing_positions` | Aviso no log, com os nomes |
 
+## Decisão: pilotos repetidos na carreira
+
+`riders_finishing_positions` tem 4 pilotos que aparecem duas vezes (Edmund Czihak,
+Lukas Tulovic, Nello Pagani e Stefan Prein). Para nada ser contado em dobro,
+`rider_career_stats` tem **uma linha por piloto**:
+
+1. linhas idênticas contam uma vez só;
+2. linhas diferentes do mesmo piloto são somadas (estatísticas divididas na origem).
+
+Por isso a reconciliação dessa tabela compara com o número de **pilotos distintos** da raw
+(390), e não com o número de linhas (394).
+
 ## Decisão: `riders_info` fica só na raw
 
 A tabela `raw.riders_info` não foi levada para a refined porque:

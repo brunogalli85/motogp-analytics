@@ -31,7 +31,7 @@ def camadas(warehouse):
         INSERT INTO refined.riders VALUES (1, 'Rossi'), (2, 'Desconhecido');
         INSERT INTO refined.constructors VALUES (1, 'Honda');
         INSERT INTO refined.race_wins VALUES (1, 1), (2, 1);
-        INSERT INTO refined.rider_career_stats VALUES ('r'), ('r'), ('m');
+        INSERT INTO refined.rider_career_stats VALUES ('r'), ('m');
         """
     )
     return warehouse
@@ -45,7 +45,7 @@ def test_reconciliacao_detecta_linhas_perdidas(camadas):
     r = _por_nome(check_reconciliation(camadas))
     assert not r["grand_prix_race_winners"].passed           # 3 na raw, 2 na refined
     assert r["grand_prix_race_winners"].detail == "raw=3 refined=2"
-    assert r["riders_finishing_positions"].passed            # 3 e 3
+    assert r["riders_finishing_positions"].passed            # 2 pilotos distintos e 2
     assert r["constructure_world_championship"].passed       # 0 e 0
 
 

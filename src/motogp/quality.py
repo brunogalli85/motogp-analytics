@@ -15,12 +15,15 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-# (tabela na raw, tabela na refined) que precisam ter o mesmo número de linhas
+# (tabela na raw, tabela na refined, contagem esperada na raw)
+# Em geral a refined tem uma linha por linha da raw. A exceção é a carreira dos pilotos,
+# consolidada em uma linha por piloto: ali o esperado é o número de pilotos distintos.
 RECONCILIATIONS = [
-    ("grand_prix_race_winners", "race_wins"),
-    ("constructure_world_championship", "constructor_championships"),
-    ("riders_finishing_positions", "rider_career_stats"),
-    ("same_nation_podium_lockouts", "podium_lockouts"),
+    ("grand_prix_race_winners", "race_wins", "COUNT(*)"),
+    ("constructure_world_championship", "constructor_championships", "COUNT(*)"),
+    ("riders_finishing_positions", "rider_career_stats",
+     "COUNT(DISTINCT TRIM(\"Rider\")) FILTER (WHERE TRIM(\"Rider\") <> '')"),
+    ("same_nation_podium_lockouts", "podium_lockouts", "COUNT(*)"),
 ]
 
 
@@ -39,8 +42,8 @@ def _count(conn: sqlite3.Connection, sql: str) -> int:
 def check_reconciliation(conn: sqlite3.Connection) -> list[CheckResult]:
     """Toda linha da raw precisa chegar na refined."""
     results = []
-    for raw_table, refined_table in RECONCILIATIONS:
-        raw_rows = _count(conn, f"SELECT COUNT(*) FROM raw.{raw_table}")
+    for raw_table, refined_table, expected_sql in RECONCILIATIONS:
+        raw_rows = _count(conn, f"SELECT {expected_sql} FROM raw.{raw_table}")
         refined_rows = _count(conn, f"SELECT COUNT(*) FROM refined.{refined_table}")
         results.append(
             CheckResult(
@@ -93,7 +96,7 @@ def check_duplicate_career_names(conn: sqlite3.Connection) -> list[CheckResult]:
     names = ", ".join(f"{rider} ({times}x)" for rider, times in rows)
     return [
         CheckResult(
-            name="nomes repetidos em riders_finishing_positions",
+            name="nomes repetidos em riders_finishing_positions (consolidados na refined)",
             passed=not rows,
             detail=names or "nenhum",
             blocking=False,

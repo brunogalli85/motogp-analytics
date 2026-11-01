@@ -36,6 +36,10 @@ RAW_TABLES = {
             ("Pecco Bagnaia", "28", "20", "15", "10", "8", ""),
             ("Mick Doohan", "54", "31", "10", "", "", "", "AU"),
             ("Loris Capirossi", "29", "30", "40", "20", "15", "10", "IT"),
+            # repetidos, como no dataset real
+            ("Loris Capirossi", "29", "30", "40", "20", "15", "10", "IT"),  # linha idêntica
+            ("Nello Pagani", "3", "1", "0", "0", "0", "0", "IT"),
+            ("Nello Pagani", "2", "1", "1", "", "", "", "GB"),            # estatística dividida
         ],
     ),
     "constructure_world_championship": (
@@ -81,8 +85,8 @@ def scalar(conn, sql):
 def test_riders_um_por_nome_sem_espacos(refined):
     nomes = [r[0] for r in refined.execute("SELECT rider_name FROM refined.riders ORDER BY 1")]
     assert nomes == [
-        "Augusto Fernandez", "Desconhecido", "Loris Capirossi", "Mick Doohan", "Pecco Bagnaia",
-        "Valentino Rossi",
+        "Augusto Fernandez", "Desconhecido", "Loris Capirossi", "Mick Doohan", "Nello Pagani",
+        "Pecco Bagnaia", "Valentino Rossi",
     ]
 
 
@@ -225,3 +229,29 @@ def test_campos_em_branco_viram_membro_desconhecido(refined):
 def test_piloto_desconhecido_nao_tem_pais(refined):
     pais = scalar(refined, "SELECT country_code FROM refined.riders WHERE rider_name = 'Desconhecido'")
     assert pais is None
+
+
+def test_career_stats_uma_linha_por_piloto(refined):
+    total = scalar(refined, "SELECT COUNT(*) FROM refined.rider_career_stats")
+    distintos = scalar(refined, "SELECT COUNT(DISTINCT rider_id) FROM refined.rider_career_stats")
+    assert total == distintos == 5
+
+
+def _carreira(conn, nome):
+    return conn.execute(
+        """
+        SELECT s.victories, s.second_places, s.third_places
+        FROM refined.rider_career_stats AS s
+        JOIN refined.riders AS r USING (rider_id)
+        WHERE r.rider_name = ?
+        """,
+        (nome,),
+    ).fetchone()
+
+
+def test_career_stats_linha_identica_conta_uma_vez(refined):
+    assert _carreira(refined, "Loris Capirossi") == (29, 30, 40)
+
+
+def test_career_stats_linhas_diferentes_sao_somadas(refined):
+    assert _carreira(refined, "Nello Pagani") == (5, 2, 1)
