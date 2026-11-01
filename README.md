@@ -48,7 +48,7 @@ motogp-analytics/
 │   ├── extract.py          # download via API do Kaggle
 │   ├── raw.py              # camada raw (cópia fiel)
 │   ├── transform.py        # executa o SQL de refined e marts
-│   ├── profile.py          # inspeção da camada raw
+│   ├── profile.py          # inspeção de qualquer camada
 │   └── pipeline.py         # ponto de entrada (CLI)
 ├── sql/
 │   ├── refined/            # transformações (01_*.sql, 02_*.sql, ...)
@@ -77,8 +77,10 @@ uv run python -m motogp.pipeline
 # Reexecutar sem baixar de novo
 uv run python -m motogp.pipeline --skip-download
 
-# Inspecionar a camada raw (tabelas, colunas e amostras)
-uv run python -m motogp.profile
+# Inspecionar uma camada (tabelas, colunas e amostras)
+uv run python -m motogp.profile            # raw
+uv run python -m motogp.profile refined
+uv run python -m motogp.profile marts
 ```
 
 ## Testes
@@ -90,6 +92,11 @@ uv run ruff check .
 
 Os testes usam um warehouse em memória e CSVs inventados. Eles nunca abrem `data/warehouse`
 nem acessam a internet (o Kaggle é simulado).
+
+## Modelo da camada refined
+
+A tabela fato `race_wins` (uma linha por vitória) se liga às dimensões `riders` e
+`constructors` por chave. Detalhes, limpezas e decisões em [`sql/refined/README.md`](sql/refined/README.md).
 
 ## Perguntas de negócio
 

@@ -15,6 +15,7 @@ from motogp.config import get_settings
 from motogp.db import connect
 from motogp.extract import ExtractError, extract
 from motogp.logging_config import setup_logging
+from motogp.quality import has_blocking_failure, run_checks
 from motogp.raw import load_raw
 from motogp.transform import build_marts, build_refined
 
@@ -52,6 +53,10 @@ def run(argv: list[str] | None = None) -> int:
             load_raw(conn, csv_paths)
             # 3. Refined: limpeza, tipos e modelagem (SQL)
             build_refined(conn, settings.sql_dir)
+            # 3.1 Qualidade: nenhuma linha pode se perder entre raw e refined
+            if has_blocking_failure(run_checks(conn)):
+                logger.error("Verificação de qualidade falhou; marts não foram gerados.")
+                return 1
             # 4. Marts: indicadores prontos para consumo (SQL)
             build_marts(conn, settings.sql_dir)
         finally:
