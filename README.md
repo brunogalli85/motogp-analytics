@@ -39,6 +39,8 @@ Projeto de final de módulo da pós-graduação em Engenharia de Dados e IA.
 Cada camada é um arquivo SQLite separado. Testes automáticos garantem que nenhuma consulta
 altera a raw, que os marts não leem direto da raw e que o dashboard não enxerga outras camadas.
 
+Especificação de cada camada em [`specs/`](specs/).
+
 ## Modelo da camada refined
 
 A tabela fato `race_wins` (uma linha por vitória) se liga por chave às dimensões `riders`
